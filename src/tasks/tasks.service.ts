@@ -1,38 +1,30 @@
 import { Injectable } from '@nestjs/common';
-import { Task } from './tasks.model';
+import { Task } from './tasks.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class TaskService {
-    tasks:Task[] = [];
+  constructor(@InjectModel('Tasks') private readonly tasksModel: Model<Task>) {}
 
+  create(task: Task) {
+    const createdTask = new this.tasksModel(task);
+    return createdTask.save();
+  }
 
-    create(task: Task): void {
-        this.tasks.push(task);
-    }
+  getList() {
+    return this.tasksModel.find().exec();
+  }
 
-    getList(): Task[] {
-        return this.tasks;
-    }
+  getById(id: string) {
+    return this.tasksModel.findById(id).exec();
+  }
 
-    getById(id: string): Task {
-        return this.tasks.find(task => task.id === id);
-    }
+  update(id: string, task: Task) {
+    return this.tasksModel.findById(id, task).exec();
+  }
 
-    update(id: string, task: Task): Task {
-        const index = this.tasks.findIndex(todo => todo.id === id);
-        if (index !== -1) {
-         return this.tasks[index] = task;
-        }
-        return null;
-    }
-    
-      remove(id: string): Task {
-        const index = this.tasks.findIndex(todo => todo.id === id);
-        if (index !== -1) {
-          const removed = this.tasks.splice(index, 1);
-          return removed[0];
-        }
-        return null;
-      }
-
+  remove(id: string) {
+    return this.tasksModel.findByIdAndDelete(id).exec();
+  }
 }

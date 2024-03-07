@@ -1,48 +1,46 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { TaskService } from './tasks.service';
-import { Task } from './tasks.model';
+import { Task } from './tasks.dto';
 
 @Controller('tasks')
 export class TaskController {
-
-  constructor(private readonly taskService: TaskService) { }
+  constructor(private readonly taskService: TaskService) {}
 
   @Get()
-  getList() {
-    const task = this.taskService.getList();
-    return { message: 'Successfully fetched todos', data: task };
+  async getList() {
+    const task = await this.taskService.getList();
+    return { message: 'Successfully fetched task', data: task };
   }
 
   @Get(':id')
-  getById(@Param('id') id: string) {
-    const task = this.taskService.getById(id);
-    if (!task) {
-      throw new HttpException('Task not found', HttpStatus.NOT_FOUND);
-    }
+  async getById(@Param('id') id: string) {
+    const task = await this.taskService.getById(id);
     return { message: 'Successfully fetched task', data: task };
   }
 
   @Post()
-  create(@Body() task: Task) {
-    const createTask = this.taskService.create(task);
+  async create(@Body() task: Task) {
+    const createTask = await this.taskService.create(task);
     return { message: 'Task created successfully', data: createTask };
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() task: Task) {
-    const updatedTask = this.taskService.update(id, task);
-    if (!updatedTask) {
-      throw new HttpException('Task not found', HttpStatus.NOT_FOUND);
-    }
+  async update(@Param('id') id: string, @Body() task: Task) {
+    const updatedTask = await this.taskService.update(id, task);
     return { message: 'Task updated successfully', data: updatedTask };
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    const deletedTask = this.taskService.remove(id);
-    if (!deletedTask) {
-      throw new HttpException('Task not found', HttpStatus.NOT_FOUND);
-    }
-    return { message: 'Task deleted successfully', data: deletedTask };
+  async remove(@Param('id') id: string) {
+    await this.taskService.remove(id);
+    return this.getList();
   }
 }
